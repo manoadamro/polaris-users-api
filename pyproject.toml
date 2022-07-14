@@ -1,0 +1,68 @@
+[tool.poetry]
+name = "dhos-users-api"
+version = "0.0.1"
+description = "DHOS Users API"
+authors = ["Andrew Gill <andrew.gill@sensynehealth.com>"]
+keywords = ["Users"]
+repository = "https://github.com/draysontechnologies/dhos-users-api"
+
+[[tool.poetry.source]]
+name = "sensynehealth"
+url = "https://pypi.fury.io/sensynehealth/"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+auth0-api-client = "1.*"
+draymed = "2.*"
+flask-batteries-included = {version = "3.*", extras = ["apispec", "pgsql"]}
+kombu-batteries-included = "1.*"
+pycryptodomex = "3.*"
+she-logging = "1.*"
+
+[tool.poetry.dev-dependencies]
+bandit = "*"
+black = "*"
+coloredlogs = "*"
+coverage = "*"
+isort = "*"
+mock = "*"
+mypy = "*"
+pytest = "*"
+pytest-dhos = {version = "*", extras=["fbi"]}
+pytest-flask = "*"
+pytest-freezegun = "*"
+pytest-mock = "*"
+requests_mock = "*"
+sadisplay = "*"
+safety = "*"
+tox = "*"
+types-Flask = "*"
+types-mock = "*"
+types-PyYAML = "*"
+types-requests = "*"
+types-waitress = "*"
+
+[tool.mypy]
+namespace_packages=true
+ignore_missing_imports=false
+disallow_untyped_defs=true
+
+[[tool.mypy.overrides]]
+module = [
+    "apispec.*",
+    "apispec_webframeworks.*",
+    "connexion",
+    "dhosredis",
+    "jose.*",
+    "sadisplay",
+    "sqlalchemy.*"
+]
+ignore_missing_imports = true
+
+[tool.isort]
+profile = "black"
+known_third_party = ["Cryptodome", "_pytest", "alembic", "apispec", "apispec_webframeworks", "auth0_api_client", "behave", "click", "clients", "connexion", "environs", "faker", "flask", "flask_batteries_included", "helper", "helpers", "jose", "kombu", "kombu_batteries_included", "marshmallow", "mock", "pytest", "pytest_mock", "requests", "sadisplay", "she_logging", "sqlalchemy", "waitress", "yaml"]
+
+[tool.black]
+line-length = 88
+target-version = ["py39"]

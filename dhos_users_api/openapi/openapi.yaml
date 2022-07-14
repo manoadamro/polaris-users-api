@@ -1,0 +1,1666 @@
+openapi: 3.0.3
+info:
+  description: A service for storing information about users
+  title: DHOS USERS API
+  version: 1.0.0
+paths:
+  /running:
+    get:
+      summary: Verify service is running
+      description: Verifies that the service is running. Used for monitoring in kubernetes.
+      tags:
+      - monitoring
+      responses:
+        '200':
+          description: If we respond, we are running
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  running:
+                    type: boolean
+                    example: true
+      operationId: flask_batteries_included.blueprint_monitoring.app_running
+  /version:
+    get:
+      summary: Get version information
+      description: Get the version number, circleci build number, and git hash.
+      tags:
+      - monitoring
+      responses:
+        '200':
+          description: Version numbers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  circle:
+                    type: string
+                    example: '1234'
+                  hash:
+                    type: string
+                    example: 366c204
+      operationId: flask_batteries_included.blueprint_monitoring.app_version
+  /dhos/v1/clinician:
+    post:
+      summary: Create clinician
+      description: Create a new clinician using the details provided in the request
+        body.
+      tags:
+      - clinician
+      parameters:
+      - name: send_welcome_email
+        in: query
+        required: false
+        description: Whether to send a welcome email
+        schema:
+          type: boolean
+          default: true
+      requestBody:
+        description: Clinician details
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClinicianCreateRequest'
+              x-body-name: clinician_details
+      responses:
+        '200':
+          description: New clinician
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicianResponse'
+        default:
+          description: Error, e.g. 400 Bad Request, 503 Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      operationId: dhos_users_api.blueprint_api.create_clinician
+      security:
+      - bearerAuth: []
+    get:
+      summary: Get clinician by email
+      description: Get clinician with the provided email address.
+      tags:
+      - clinician
+      parameters:
+      - name: email
+        in: query
+        required: true
+        description: Email address of the clinician requested.
+        schema:
+          type: string
+          example: robert@mail.com
+      responses:
+        '200':
+          description: Requested clinician with the provided email address
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicianResponse'
+        default:
+          description: Error, e.g. 400 Bad Request, 503 Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      operationId: dhos_users_api.blueprint_api.get_clinician_by_email
+      security:
+      - bearerAuth: []
+    patch:
+      summary: Update clinician's password by email
+      description: Update the clinician with the provided email using the details
+        in the request body.
+      tags:
+      - clinician
+      parameters:
+      - name: email
+        in: query
+        required: true
+        description: Email address of clinician
+        schema:
+          type: string
+          example: robert@mail.com
+      requestBody:
+        description: Clinician password update
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClinicianPasswordUpdateRequest'
+              x-body-name: clinician_details
+      responses:
+        '200':
+          description: Updated clinician
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicianResponse'
+        default:
+          description: Error, e.g. 400 Bad Request, 503 Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      operationId: dhos_users_api.blueprint_api.update_clinician_password_by_email
+      security:
+      - bearerAuth: []
+  /dhos/v1/clinician/{clinician_id}/terms_agreement:
+    post:
+      summary: Create clinician terms of service agreement
+      description: Create a new clinician terms of service agreement using the details
+        provided in the request body.
+      tags:
+      - terms-agreement
+      parameters:
+      - name: clinician_id
+        in: path
+        required: true
+        description: Clinician UUID
+        schema:
+          type: string
+          example: bba65af9-88d3-459b-8c09-c359873828f7
+      requestBody:
+        description: Clinician terms of service details
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClinicianTermsRequest'
+              x-body-name: clinician_tos
+      responses:
+        '200':
+          description: New clinician terms of service
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicianTermsResponse'
+        default:
+          description: Error, e.g. 400 Bad Request, 503 Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      operationId: dhos_users_api.blueprint_api.create_clinician_tos
+      security:
+      - bearerAuth: []
+  /dhos/v1/clinician/{clinician_id}:
+    get:
+      summary: Get clinician by UUID
+      description: Get the clinician with the provided UUID.
+      tags:
+      - clinician
+      parameters:
+      - name: clinician_id
+        in: path
+        required: true
+        description: Clinician UUID
+        schema:
+          type: string
+          example: bba65af9-88d3-459b-8c09-c359873828f7
+      - name: product_name
+        in: query
+        required: false
+        description: Name of product
+        schema:
+          type: string
+          example: SEND
+      - name: temp_only
+        in: query
+        required: false
+        description: Restrict to temporary clinicians only
+        schema:
+          type: boolean
+          default: false
+      responses:
+        '200':
+          description: Requested clinician
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicianResponse'
+        default:
+          description: Error, e.g. 400 Bad Request, 503 Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      operationId: dhos_users_api.blueprint_api.get_clinician_by_uuid
+      security:
+      - bearerAuth: []
+    patch:
+      summary: Update clinician
+      description: Update the clinician with the provided UUID using the details in
+        the request body.
+      tags:
+      - clinician
+      parameters:
+      - name: clinician_id
+        in: path
+        required: true
+        description: Clinician UUID
+        schema:
+          type: string
+          example: bba65af9-88d3-459b-8c09-c359873828f7
+      - name: product_name
+        in: query
+        required: false
+        description: Name of product
+        deprecated: true
+        schema:
+          type: string
+          example: SEND
+      - name: temp_only
+        in: query
+        required: false
+        description: Can edit temporary clinicians only
+        schema:
+          type: boolean
+          default: false
+      requestBody:
+        description: Clinician update
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClinicianUpdateRequest'
+              x-body-name: clinician_details
+      responses:
+        '200':
+          description: Updated clinician
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicianResponse'
+        default:
+          description: Error, e.g. 400 Bad Request, 503 Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      operationId: dhos_users_api.blueprint_api.update_clinician
+      security:
+      - bearerAuth: []
+  /dhos/v1/clinician/{clinician_id}/delete:
+    patch:
+      summary: Remove details from clinician
+      description: Remove the details in the request body from the clinician with
+        the provided UUID. Note that this endpoint does not remove the clinician itself.
+      tags:
+      - clinician
+      parameters:
+      - name: clinician_id
+        in: path
+        required: true
+        description: Clinician UUID
+        schema:
+          type: string
+          example: bba65af9-88d3-459b-8c09-c359873828f7
+      requestBody:
+        description: 'Details to remove from clinician: This endpoint can only delete
+          individual items from a collection such as a list or tuple. The list here
+          includes bookmarks, bookmarked_patients, groups, locations and products.
+          There are some specific permissions required for groups and bookmarked_patients.
+          It will ignore a single key-value pair e.g. { "phone_number" : "01234999999"
+          }.'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClinicianRemoveRequest'
+              x-body-name: clinician_details
+      responses:
+        '200':
+          description: Updated clinician
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicianResponse'
+        default:
+          description: Error, e.g. 400 Bad Request, 503 Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      operationId: dhos_users_api.blueprint_api.remove_from_clinician
+      security:
+      - bearerAuth: []
+  /dhos/v1/clinician/login:
+    get:
+      summary: Validate clinician login
+      description: Validate a clinician's login credentials and return a login response
+      tags:
+      - login
+      parameters:
+      - name: UserAuthorization
+        in: header
+        required: true
+        description: User authorization bearer token base64 encoded string containing
+          the username and password, separated by colon
+        schema:
+          type: string
+          example: Bearer bGF6YXJvLnZhbmRlcnZvcnRAbWFpbC5jb206UGFzc0B3b3JkMSE=
+      responses:
+        '200':
+          description: Clinician's user details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicianLoginResponse'
+        default:
+          description: Error, e.g. 400 Bad Request, 503 Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      operationId: dhos_users_api.blueprint_api.clinician_login
+      security:
+      - bearerAuth: []
+  /dhos/v1/clinicians:
+    get:
+      summary: Get all clinicians
+      description: Get all clinicians. Supports pagination.
+      tags:
+      - clinician
+      parameters:
+      - name: product_name
+        in: query
+        required: false
+        description: Product name
+        schema:
+          type: string
+          example: GDM
+      - name: login_active
+        in: query
+        required: false
+        description: Return only active/inactive clinicians. If not passed in, returns
+          all clinicians regardless of active status.
+        schema:
+          type: boolean
+          example: true
+      - name: compact
+        in: query
+        required: false
+        description: Specifies if the response should be in compact form.
+        schema:
+          type: boolean
+          default: false
+          example: false
+      - name: expanded
+        in: query
+        required: false
+        description: Specifies if the response should be in expanded form.
+        schema:
+          type: boolean
+          default: false
+          example: false
+      - name: modified_since
+        in: query
+        required: false
+        description: Filter clinicians to those modified since this datetime. Note,
+          if timezone is used, a `+` symbol should be passed as an URL-encoded character,
+          i.e. `%2B`
+        schema:
+          type: string
+          example: 2000-01-01T01:01:01.123%2B01:00
+      - name: temp_only
+        in: query
+        required: false
+        description: Only return temporary clinicians
+        schema:
+          type: boolean
+          default: false
+      - name: q
+        in: query
+        required: false
+        description: Filter clinicians by a string (substring) provided. Search is
+          performed in `name` (substring), `role` (substring), `badge_id` (string).
+        schema:
+          type: string
+          example: Lorem
+      - name: offset
+        in: query
+        required: false
+        description: Apply offset to the search results, i.e. given there are 75 clinicians
+          in the database and the offset param is set to 50, the outcome would be
+          the last 25 clinicians.
+        schema:
+          type: integer
+          example: 50
+      - name: limit
+        in: query
+        required: false
+        description: Limit the search results to the number provided.
+        schema:
+          type: integer
+          example: 25
+      - name: sort
+        in: query
+        required: false
+        description: List of clinician's field to sort the search results by
+        schema:
+          type: array
+          nullable: true
+          items:
+            type: string
+            enum:
+            - last_name
+            - first_name
+            - uuid
+            - nhs_smartcard_number
+            - email_address
+            - modified
+            - created
+            - phone_number
+            - send_entry_identifier
+            - job_title
+          default:
+          - last_name
+          - first_name
+      - name: order
+        in: query
+        required: false
+        description: Sort order
+        schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: asc
+      responses:
+        '200':
+          description: List of clinicians
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClinicianResponse'
+        default:
+          description: Error, e.g. 400 Bad Request, 503 Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      operationId: dhos_users_api.blueprint_api.get_clinicians_v1
+      deprecated: true
+      security:
+      - bearerAuth: []
+  /dhos/v2/clinicians:
+    get:
+      summary: Get all clinicians
+      description: Get all clinicians. Supports pagination.
+      tags:
+      - clinician
+      parameters:
+      - name: product_name
+        in: query
+        required: false
+        description: Product name
+        schema:
+          type: string
+          example: GDM
+      - name: login_active
+        in: query
+        required: false
+        description: Return only active/inactive clinicians. If not passed in, returns
+          all clinicians regardless of active status.
+        schema:
+          type: boolean
+          example: true
+      - name: compact
+        in: query
+        required: false
+        description: Specifies if the response should be in compact form.
+        schema:
+          type: boolean
+          default: false
+          example: false
+      - name: expanded
+        in: query
+        required: false
+        description: Specifies if the response should be in expanded form.
+        schema:
+          type: boolean
+          default: false
+          example: false
+      - name: modified_since
+        in: query
+        required: false
+        description: Filter clinicians to those modified since this datetime. Note,
+          if timezone is used, a `+` symbol should be passed as an URL-encoded character,
+          i.e. `%2B`
+        schema:
+          type: string
+          example: 2000-01-01T01:01:01.123%2B01:00
+      - name: temp_only
+        in: query
+        required: false
+        description: Only return temporary clinicians
+        schema:
+          type: boolean
+          default: false
+      - name: q
+        in: query
+        required: false
+        description: Filter clinicians by a string (substring) provided. Search is
+          performed in `name` (substring), `role` (substring), `badge_id` (string).
+        schema:
+          type: string
+          example: Lorem
+      - name: offset
+        in: query
+        required: false
+        description: Apply offset to the search results, i.e. given there are 75 clinicians
+          in the database and the offset param is set to 50, the outcome would be
+          the last 25 clinicians.
+        schema:
+          type: integer
+          example: 50
+      - name: limit
+        in: query
+        required: false
+        description: Limit the search results to the number provided.
+        schema:
+          type: integer
+          example: 25
+      - name: sort
+        in: query
+        required: false
+        description: List of clinician's field to sort the search results by
+        schema:
+          type: array
+          nullable: true
+          items:
+            type: string
+            enum:
+            - last_name
+            - first_name
+            - uuid
+            - nhs_smartcard_number
+            - email_address
+            - modified
+            - created
+            - phone_number
+            - send_entry_identifier
+            - job_title
+          default:
+          - last_name
+          - first_name
+      - name: order
+        in: query
+        required: false
+        description: Sort order
+        schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: asc
+      responses:
+        '200':
+          description: List of clinicians and total
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CliniciansResponse'
+        default:
+          description: Error, e.g. 400 Bad Request, 503 Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      operationId: dhos_users_api.blueprint_api.get_clinicians
+      security:
+      - bearerAuth: []
+  /dhos/v1/clinician_list:
+    post:
+      summary: Retrieve clinicians by UUIDs
+      description: Retrieve clinicians by list of UUIDs. Response contains a map of
+        clinician UUIDs to clinician details.
+      tags:
+      - clinician
+      parameters:
+      - name: compact
+        in: query
+        required: false
+        description: Specifies if the response should be in compact form.
+        schema:
+          type: boolean
+          default: false
+          example: false
+      requestBody:
+        description: List of clinician uuids
+        required: true
+        content:
+          application/json:
+            schema:
+              x-body-name: clinician_uuids
+              type: array
+              items:
+                type: string
+              example:
+              - bba65af9-88d3-458b-8c09-c359873828f7
+              - 276ff208-8893-4592-a4a5-ed4d7dd35f89
+      responses:
+        '200':
+          description: Map of clinicians
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/ClinicianResponse'
+        default:
+          description: Error, e.g. 400 Bad Request, 503 Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      operationId: dhos_users_api.blueprint_api.retrieve_clinicians_by_uuids
+      security:
+      - bearerAuth: []
+  /dhos/v1/location/{location_id}/clinician:
+    get:
+      summary: Get clinicians at location
+      description: Get the clinicians associated with the location with the provided
+        UUID.
+      tags:
+      - clinician
+      parameters:
+      - name: location_id
+        in: path
+        required: true
+        description: Location UUID
+        schema:
+          type: string
+          example: 2ee7c51b-0a5c-4843-9dc3-635461ea729c
+      responses:
+        '200':
+          description: List of clinicians
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClinicianResponse'
+        default:
+          description: Error, e.g. 400 Bad Request, 503 Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      operationId: dhos_users_api.blueprint_api.get_clinicians_by_location
+      security:
+      - bearerAuth: []
+  /dhos/v1/clinician/{clinician_id}/location/{location_id}/bookmark:
+    post:
+      summary: Create a clinician-location bookmark
+      description: Create a bookmark between the clinician and location with the provided
+        UUIDs.
+      tags:
+      - bookmark
+      parameters:
+      - name: clinician_id
+        in: path
+        required: true
+        description: Clinician UUID
+        schema:
+          type: string
+          example: 621ff25d-4768-4fc5-a9f0-2b5b7cf52b39
+      - name: location_id
+        in: path
+        required: true
+        description: Location UUID
+        schema:
+          type: string
+          example: 99f86b12-0112-42be-a0bb-fbe8e65c6b2f
+      responses:
+        '201':
+          description: Bookmark created
+        default:
+          description: Error, e.g. 400 Bad Request, 503 Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      operationId: dhos_users_api.blueprint_api.create_clinician_location_bookmark
+      security:
+      - bearerAuth: []
+    delete:
+      summary: Delete a clinician-location bookmark
+      description: Delete a bookmark between the clinician and location with the provided
+        UUIDs.
+      tags:
+      - bookmark
+      parameters:
+      - name: clinician_id
+        in: path
+        required: true
+        description: Clinician UUID
+        schema:
+          type: string
+          example: 621ff25d-4768-4fc5-a9f0-2b5b7cf52b39
+      - name: location_id
+        in: path
+        required: true
+        description: Location UUID
+        schema:
+          type: string
+          example: 99f86b12-0112-42be-a0bb-fbe8e65c6b2f
+      responses:
+        '204':
+          description: Bookmark deleted
+        default:
+          description: Error, e.g. 400 Bad Request, 503 Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      operationId: dhos_users_api.blueprint_api.delete_clinician_location_bookmark
+      security:
+      - bearerAuth: []
+  /dhos/v1/clinician/{clinician_id}/patient/{patient_id}/bookmark:
+    post:
+      summary: Create a clinician-patient bookmark
+      description: Create a bookmark between the patient with the provided UUID and
+        a clinician. Note that the clinician is determined by the JWT and not the
+        clinician UUID in the path.
+      tags:
+      - patient
+      parameters:
+      - name: clinician_id
+        in: path
+        required: true
+        description: Clinician UUID (this is ignored)
+        schema:
+          type: string
+          example: 621ff25d-4768-4fc5-a9f0-2b5b7cf52b39
+      - name: patient_id
+        in: path
+        required: true
+        description: Patient UUID
+        schema:
+          type: string
+          example: ff9279e6-7a70-4fbb-b532-eb8a602751ae
+      responses:
+        '201':
+          description: Bookmark created
+        default:
+          description: Error, e.g. 400 Bad Request, 503 Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      operationId: dhos_users_api.blueprint_api.create_clinician_patient_bookmark
+      security:
+      - bearerAuth: []
+    delete:
+      summary: Delete a clinician-patient bookmark
+      description: Delete a bookmark between the patient with the provided UUID and
+        a clinician. Note that the clinician is determined by the JWT and not the
+        clinician UUID in the path.
+      tags:
+      - patient
+      parameters:
+      - name: clinician_id
+        in: path
+        required: true
+        description: Clinician UUID (this is ignored)
+        schema:
+          type: string
+          example: 621ff25d-4768-4fc5-a9f0-2b5b7cf52b39
+      - name: patient_id
+        in: path
+        required: true
+        description: Patient UUID
+        schema:
+          type: string
+          example: ff9279e6-7a70-4fbb-b532-eb8a602751ae
+      responses:
+        '204':
+          description: Bookmark deleted
+        default:
+          description: Error, e.g. 400 Bad Request, 503 Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      operationId: dhos_users_api.blueprint_api.delete_clinician_patient_bookmark
+      security:
+      - bearerAuth: []
+  /dhos/v1/clinician/bulk:
+    post:
+      summary: Create clinician in bulk (migration only)
+      description: Creates clinicians using the details provided in the request body.
+        Intended for migration from Services API only.
+      tags:
+      - migration
+      requestBody:
+        description: Clinician details
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/ClinicianCreateRequest'
+              x-body-name: clinician_details
+      responses:
+        '200':
+          description: Bulk clinician creation complete
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  created:
+                    type: integer
+                    description: Number of clinicians created
+                    example: 50
+        default:
+          description: Error, e.g. 400 Bad Request, 503 Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      operationId: dhos_users_api.blueprint_api.create_clinician_bulk
+      security:
+      - bearerAuth: []
+  /dhos/v1/roles:
+    get:
+      summary: Get roles
+      description: Get a map of roles and their associated permissions
+      tags:
+      - roles
+      responses:
+        '200':
+          description: Map of roles and permissions
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+                example:
+                  System:
+                  - read:patient_all
+                  - write:patient_all
+        default:
+          description: Error, e.g. 400 Bad Request, 503 Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      operationId: dhos_users_api.blueprint_api.get_roles
+      security:
+      - bearerAuth: []
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: HTTP response code
+          example: 404
+        message:
+          type: string
+          description: Message attached to response
+          example: Not Found
+      required:
+      - code
+      description: An error response in json format
+    ClinicianProduct:
+      type: object
+      properties:
+        product_name:
+          type: string
+          description: Product name
+          example: SEND
+        opened_date:
+          type: string
+          format: date
+          description: Opened date
+          example: '2018-01-01'
+        closed_date:
+          type: string
+          format: date
+          nullable: true
+          description: Closed date
+          example: '2018-06-01'
+        closed_reason:
+          type: string
+          nullable: true
+          description: Closed reason
+          example: Some reason
+        closed_reason_other:
+          type: string
+          nullable: true
+          description: Closed reason other
+          example: Some other reason
+        accessibility_discussed:
+          type: boolean
+          nullable: true
+          description: Whether accessibility was discussed
+          example: true
+        accessibility_discussed_date:
+          type: string
+          nullable: true
+          description: When was accessibility discussed
+          example: '2019-10-07'
+        accessibility_discussed_with:
+          type: object
+          nullable: true
+      required:
+      - opened_date
+      - product_name
+      description: Clinician product
+    ClinicianCreateRequest:
+      type: object
+      properties:
+        bookmarks:
+          type: array
+          nullable: true
+          description: List of bookmarked location UUIDs
+          example: &id001
+          - 2ae1e5f0-2e64-405b-a5e2-96d38a688df1
+          items:
+            type: string
+        bookmarked_patients:
+          type: array
+          nullable: true
+          description: List of bookmarked patient UUIDs
+          example: &id002
+          - eb42ee95-6aa6-46b7-9c3e-0e96526747a6
+          items:
+            type: string
+        can_edit_ews:
+          type: boolean
+          nullable: true
+          description: Whether the clinician is allowed to change a patient's early
+            warning score in SEND
+          example: true
+        contract_expiry_eod_date:
+          type: string
+          format: date
+          nullable: true
+          description: Contract expiry date
+          example: '2020-12-31'
+        professional_registration_number:
+          type: string
+          nullable: true
+          description: Professional registration number
+          example: '321'
+        agency_name:
+          type: string
+          nullable: true
+          description: Agency name
+          example: XYZ Ltd
+        agency_staff_employee_number:
+          type: string
+          nullable: true
+          description: Agency staff employee number
+          example: '321'
+        email_address:
+          type: string
+          nullable: true
+          description: e-mail address
+          example: abc@xyz.com
+        booking_reference:
+          type: string
+          nullable: true
+          description: Booking reference
+          example: '4321'
+        analytics_consent:
+          type: boolean
+          nullable: true
+          description: Indicates if the user has given consent to analytics
+          example: true
+        send_entry_identifier:
+          type: string
+          nullable: true
+          description: Identifier used by clinician to log into SEND entry
+          example: '321'
+        login_active:
+          type: boolean
+          nullable: true
+          description: Whether the clinician is allowed to log in
+          example: true
+        first_name:
+          type: string
+          description: First name
+          example: John
+        last_name:
+          type: string
+          description: last name
+          example: Roberts
+        phone_number:
+          type: string
+          description: Phone number
+          example: 01234098765
+        job_title:
+          type: string
+          description: Job title
+          example: Doctor
+        nhs_smartcard_number:
+          type: string
+          description: NHS Smartcard number
+          example: '012345'
+        locations:
+          type: array
+          description: List of UUIDs of locations with which the clinician is associated
+          example:
+          - eb42ee95-6aa6-46b7-9c3e-0e96526747a6
+          items:
+            type: string
+        groups:
+          type: array
+          description: List of user groups assigned to
+          example:
+          - SEND Clinician
+          items:
+            type: string
+        products:
+          type: array
+          minItems: 1
+          description: Products with which the clinician should be associated
+          example:
+          - product_name: SEND
+            opened_date: '2019-06-01'
+          items:
+            $ref: '#/components/schemas/ClinicianProduct'
+      required:
+      - first_name
+      - groups
+      - job_title
+      - last_name
+      - locations
+      - nhs_smartcard_number
+      - phone_number
+      - products
+      description: Clinician create request
+    ClinicianTermsRequest:
+      type: object
+      properties:
+        product_name:
+          type: string
+          description: Product name
+          example: SEND
+        version:
+          type: integer
+          description: Product version
+          example: 12
+        accepted_timestamp:
+          type: string
+          nullable: true
+          description: Accepted at timestamp
+          example: '2019-01-01T12:01:01.000Z'
+      required:
+      - product_name
+      - version
+      description: Create Clinician Terms of Service request
+    ClinicianTermsResponse:
+      type: object
+      properties:
+        uuid:
+          type: string
+          description: Universally unique identifier for object
+          example: 2c4f1d24-2952-4d4e-b1d1-3637e33cc161
+        created:
+          type: string
+          format: date-time
+          description: When the object was created
+          example: '2017-09-23T08:29:19.123+00:00'
+        created_by:
+          type: string
+          nullable: true
+          description: UUID of the user that created the object
+          example: d26570d8-a2c9-4906-9c6a-ea1a98b8b80f
+        modified:
+          type: string
+          format: date-time
+          description: When the object was created
+          example: '2017-09-23T08:29:19.123+00:00'
+        modified_by:
+          type: string
+          nullable: true
+          description: UUID of the user that modified the object
+          example: 2a0e26e5-21b6-463a-92e8-06d7290067d0
+        product_name:
+          type: string
+          description: Product name
+          example: SEND
+        version:
+          type: integer
+          description: Product version
+          example: 12
+        accepted_timestamp:
+          type: string
+          nullable: true
+          description: Accepted at timestamp
+          example: '2019-01-01T12:01:01.000Z'
+      required:
+      - created
+      - created_by
+      - modified
+      - product_name
+      - uuid
+      - version
+      description: Create Clinician Terms of Service response
+    ClinicianUpdateRequest:
+      type: object
+      properties:
+        bookmarks:
+          type: array
+          nullable: true
+          description: List of bookmarked location UUIDs
+          example: *id001
+          items:
+            type: string
+        bookmarked_patients:
+          type: array
+          nullable: true
+          description: List of bookmarked patient UUIDs
+          example: *id002
+          items:
+            type: string
+        can_edit_ews:
+          type: boolean
+          nullable: true
+          description: Whether the clinician is allowed to change a patient's early
+            warning score in SEND
+          example: true
+        contract_expiry_eod_date:
+          type: string
+          format: date
+          nullable: true
+          description: Contract expiry date
+          example: '2020-12-31'
+        professional_registration_number:
+          type: string
+          nullable: true
+          description: Professional registration number
+          example: '321'
+        agency_name:
+          type: string
+          nullable: true
+          description: Agency name
+          example: XYZ Ltd
+        agency_staff_employee_number:
+          type: string
+          nullable: true
+          description: Agency staff employee number
+          example: '321'
+        email_address:
+          type: string
+          nullable: true
+          description: e-mail address
+          example: abc@xyz.com
+        booking_reference:
+          type: string
+          nullable: true
+          description: Booking reference
+          example: '4321'
+        analytics_consent:
+          type: boolean
+          nullable: true
+          description: Indicates if the user has given consent to analytics
+          example: true
+        send_entry_identifier:
+          type: string
+          nullable: true
+          description: Identifier used by clinician to log into SEND entry
+          example: '321'
+        login_active:
+          type: boolean
+          nullable: true
+          description: Whether the clinician is allowed to log in
+          example: true
+        first_name:
+          type: string
+          nullable: true
+          description: First name
+          example: John
+        last_name:
+          type: string
+          nullable: true
+          description: last name
+          example: Roberts
+        phone_number:
+          type: string
+          nullable: true
+          description: Phone number
+          example: 01234098765
+        job_title:
+          type: string
+          nullable: true
+          description: Job title
+          example: Doctor
+        nhs_smartcard_number:
+          type: string
+          nullable: true
+          description: NHS Smartcard number
+          example: '012345'
+        locations:
+          type: array
+          nullable: true
+          description: List of UUIDs of locations with which the clinician is associated
+          example: &id003
+          - eb42ee95-6aa6-46b7-9c3e-0e96526747a6
+          items:
+            type: string
+        groups:
+          type: array
+          nullable: true
+          description: List of user groups assigned to
+          example: &id004
+          - SEND Clinician
+          items:
+            type: string
+        products:
+          nullable: true
+          description: Products with which the clinician should be associated
+          example: &id005
+          - product_name: SEND
+            opened_date: '2019-06-01'
+          allOf:
+          - $ref: '#/components/schemas/ClinicianProduct'
+      description: Clinician update request
+    ClinicianPasswordUpdateRequest:
+      type: object
+      properties:
+        password:
+          type: string
+          description: Password
+          example: abc*_123
+      required:
+      - password
+      description: Clinician password update request
+    ClinicianRemoveRequest:
+      type: object
+      properties:
+        bookmarks:
+          type: array
+          nullable: true
+          description: List of bookmarked location UUIDs
+          example: *id001
+          items:
+            type: string
+        bookmarked_patients:
+          type: array
+          nullable: true
+          description: List of bookmarked patient UUIDs
+          example: *id002
+          items:
+            type: string
+        can_edit_ews:
+          type: boolean
+          nullable: true
+          description: Whether the clinician is allowed to change a patient's early
+            warning score in SEND
+          example: true
+        contract_expiry_eod_date:
+          type: string
+          format: date
+          nullable: true
+          description: Contract expiry date
+          example: '2020-12-31'
+        professional_registration_number:
+          type: string
+          nullable: true
+          description: Professional registration number
+          example: '321'
+        agency_name:
+          type: string
+          nullable: true
+          description: Agency name
+          example: XYZ Ltd
+        agency_staff_employee_number:
+          type: string
+          nullable: true
+          description: Agency staff employee number
+          example: '321'
+        email_address:
+          type: string
+          nullable: true
+          description: e-mail address
+          example: abc@xyz.com
+        booking_reference:
+          type: string
+          nullable: true
+          description: Booking reference
+          example: '4321'
+        analytics_consent:
+          type: boolean
+          nullable: true
+          description: Indicates if the user has given consent to analytics
+          example: true
+        send_entry_identifier:
+          type: string
+          nullable: true
+          description: Identifier used by clinician to log into SEND entry
+          example: '321'
+        login_active:
+          type: boolean
+          nullable: true
+          description: Whether the clinician is allowed to log in
+          example: true
+        first_name:
+          type: string
+          nullable: true
+          description: First name
+          example: John
+        last_name:
+          type: string
+          nullable: true
+          description: last name
+          example: Roberts
+        phone_number:
+          type: string
+          nullable: true
+          description: Phone number
+          example: 01234098765
+        job_title:
+          type: string
+          nullable: true
+          description: Job title
+          example: Doctor
+        nhs_smartcard_number:
+          type: string
+          nullable: true
+          description: NHS Smartcard number
+          example: '012345'
+        locations:
+          type: array
+          nullable: true
+          description: List of UUIDs of locations with which the clinician is associated
+          example: *id003
+          items:
+            type: string
+        groups:
+          type: array
+          nullable: true
+          description: List of user groups assigned to
+          example: *id004
+          items:
+            type: string
+        products:
+          nullable: true
+          description: Products with which the clinician should be associated
+          example: *id005
+          allOf:
+          - $ref: '#/components/schemas/ClinicianProduct'
+      description: Clinician remove request
+    ClinicianResponse:
+      type: object
+      properties:
+        uuid:
+          type: string
+          description: Universally unique identifier for object
+          example: 2c4f1d24-2952-4d4e-b1d1-3637e33cc161
+        created:
+          type: string
+          format: date-time
+          description: When the object was created
+          example: '2017-09-23T08:29:19.123+00:00'
+        created_by:
+          type: string
+          nullable: true
+          description: UUID of the user that created the object
+          example: d26570d8-a2c9-4906-9c6a-ea1a98b8b80f
+        modified:
+          type: string
+          format: date-time
+          description: When the object was created
+          example: '2017-09-23T08:29:19.123+00:00'
+        modified_by:
+          type: string
+          nullable: true
+          description: UUID of the user that modified the object
+          example: 2a0e26e5-21b6-463a-92e8-06d7290067d0
+        bookmarks:
+          type: array
+          nullable: true
+          description: List of bookmarked location UUIDs
+          example: *id001
+          items:
+            type: string
+        bookmarked_patients:
+          type: array
+          nullable: true
+          description: List of bookmarked patient UUIDs
+          example: *id002
+          items:
+            type: string
+        can_edit_ews:
+          type: boolean
+          nullable: true
+          description: Whether the clinician is allowed to change a patient's early
+            warning score in SEND
+          example: true
+        contract_expiry_eod_date:
+          type: string
+          format: date
+          nullable: true
+          description: Contract expiry date
+          example: '2020-12-31'
+        professional_registration_number:
+          type: string
+          nullable: true
+          description: Professional registration number
+          example: '321'
+        agency_name:
+          type: string
+          nullable: true
+          description: Agency name
+          example: XYZ Ltd
+        agency_staff_employee_number:
+          type: string
+          nullable: true
+          description: Agency staff employee number
+          example: '321'
+        email_address:
+          type: string
+          nullable: true
+          description: e-mail address
+          example: abc@xyz.com
+        booking_reference:
+          type: string
+          nullable: true
+          description: Booking reference
+          example: '4321'
+        analytics_consent:
+          type: boolean
+          nullable: true
+          description: Indicates if the user has given consent to analytics
+          example: true
+        send_entry_identifier:
+          type: string
+          nullable: true
+          description: Identifier used by clinician to log into SEND entry
+          example: '321'
+        login_active:
+          type: boolean
+          nullable: true
+          description: Whether the clinician is allowed to log in
+          example: true
+        first_name:
+          type: string
+          nullable: true
+          description: First name
+          example: John
+        last_name:
+          type: string
+          nullable: true
+          description: last name
+          example: Roberts
+        phone_number:
+          type: string
+          nullable: true
+          description: Phone number
+          example: 01234098765
+        job_title:
+          type: string
+          nullable: true
+          description: Job title
+          example: Doctor
+        nhs_smartcard_number:
+          type: string
+          nullable: true
+          description: NHS Smartcard number
+          example: '012345'
+        locations:
+          type: array
+          nullable: true
+          description: List of UUIDs of locations with which the clinician is associated
+          example: *id003
+          items:
+            type: string
+        groups:
+          type: array
+          nullable: true
+          description: List of user groups assigned to
+          example: *id004
+          items:
+            type: string
+        products:
+          nullable: true
+          description: Products with which the clinician should be associated
+          example: *id005
+          allOf:
+          - $ref: '#/components/schemas/ClinicianProduct'
+        terms_agreement:
+          type: object
+          nullable: true
+          description: Latest terms agreement
+      required:
+      - created
+      - created_by
+      - modified
+      - uuid
+      description: Clinician response
+    CliniciansResponse:
+      type: object
+      properties:
+        results:
+          $ref: '#/components/schemas/ClinicianResponse'
+        total:
+          type: integer
+          description: Total clinicians in the database matching the request
+      required:
+      - results
+      - total
+      description: Clinicians response
+    ClinicianLocations:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name used to display the location for product
+          example: John Radcliffe Hospital
+        id:
+          type: string
+          description: Location UUID
+          example: eb42ee95-6aa6-46b7-9c3e-0e96526747a6
+        products:
+          type: array
+          description: Products with which the clinician should be associated
+          example:
+          - product_name: SEND
+            opened_date: '2019-06-01'
+          items:
+            $ref: '#/components/schemas/ClinicianProduct'
+    ClinicianLoginResponse:
+      type: object
+      properties:
+        job_title:
+          type: string
+          description: Job title
+          example: Doctor
+        email_address:
+          type: string
+          nullable: true
+          description: e-mail address
+          example: abc@xyz.com
+        locations:
+          type: array
+          description: Locations with which the clinician should be associated
+          items:
+            $ref: '#/components/schemas/ClinicianLocations'
+        user_id:
+          type: string
+          description: User UUID of clinician
+          example: eb42ee95-6aa6-46b7-9c3e-0e96526747a6
+        groups:
+          type: array
+          description: List of user groups assigned to
+          example:
+          - SEND Clinician
+          items:
+            type: string
+        permissions:
+          type: array
+          description: List of permissions user has
+          example:
+          - read:patient_all
+          - write:patient_all
+          items:
+            type: string
+        products:
+          type: array
+          description: Products with which the clinician should be associated
+          example:
+          - product_name: SEND
+            opened_date: '2019-06-01'
+          items:
+            $ref: '#/components/schemas/ClinicianProduct'
+        can_edit_ews:
+          type: boolean
+          nullable: true
+          description: Whether the clinician is allowed to change a patient's SpO2
+            scale in SEND
+      required:
+      - can_edit_ews
+      - email_address
+      - groups
+      - job_title
+      - locations
+      - permissions
+      - products
+      - user_id
+      description: Create Clinician Terms of Service response
+  responses:
+    BadRequest:
+      description: Bad or malformed request was received
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ServiceUnavailable:
+      description: Service or dependent resource not available
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

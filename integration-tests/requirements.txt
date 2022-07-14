@@ -1,0 +1,12 @@
+behave
+black
+draymed==2.*
+environs
+faker
+isort
+kombu==4.*
+mypy
+python-jose==3.*
+requests
+she-logging==1.*
+types-requests

@@ -1,0 +1,102 @@
+x-environment:
+  &COMMON_ENVIRONMENT
+  ENVIRONMENT: DEVELOPMENT
+  ALLOW_DROP_DATA: "True"
+  PROXY_URL: http://localhost
+  HS_ISSUER: http://localhost/
+  HS_KEY: secret
+  AUTH0_MGMT_CLIENT_ID: "doesnotmatter"
+  AUTH0_MGMT_CLIENT_SECRET: "shhh"
+  AUTH0_AUTHZ_CLIENT_ID: "doesnotmatter"
+  AUTH0_AUTHZ_CLIENT_SECRET: "shhh"
+  AUTH0_AUTHZ_WEBTASK_URL: "doesnotmatter"
+  AUTH0_CLIENT_ID: "doesnotmatter"
+  AUTH0_AUDIENCE: "http://localhost/"
+  NONCUSTOM_AUTH0_DOMAIN: "https://integration-tests"
+  AUTH0_CUSTOM_DOMAIN: "dev"
+  DISABLE_CREATE_USER_IN_AUTH0: "True"
+  AUTH0_HS_KEY: "secret"
+  DATABASE_HOST: postgres-db
+  DATABASE_PORT: 5432
+  DATABASE_USER: postgres-user
+  DATABASE_PASSWORD: TopSecretPassword
+  RABBITMQ_DISABLED: "False"
+  RABBITMQ_HOST: rabbitmq
+  RABBITMQ_USERNAME: guest
+  RABBITMQ_PASSWORD: guest
+  REDIS_HOST: localhost
+  REDIS_PORT: 6379
+  REDIS_PASSWORD: any
+  TOKEN_URL: "https://integration-tests/oauth/token"
+  CUSTOMER_CODE: DEV
+  LOG_LEVEL: DEBUG
+  LOG_FORMAT: COLOUR
+
+services:
+  dhos-users-integration-tests:
+    container_name: "dhos-users-integration-tests"
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      args:
+        - PIP_EXTRA_INDEX_URL
+    environment:
+      <<: *COMMON_ENVIRONMENT
+      BEHAVE_ARGS: ${BEHAVE_ARGS:-}
+      SYSTEM_JWT_SCOPE: >-
+        read:send_clinician read:gdm_clinician read:gdm_clinician_all
+        write:send_clinician write:gdm_clinician write:gdm_clinician_all
+        write:send_clinician_all write:send_terms_agreement write:clinician_migration read:send_location
+    command: bash -c "behave --no-capture --no-logcapture ${BEHAVE_ARGS:-}"
+    depends_on:
+      "dhos-users-api":
+        condition: service_healthy
+
+  dhos-users-api:
+    container_name: "dhos-users-api"
+    build:
+      context: ..
+      args:
+        - GEMFURY_DOWNLOAD_KEY
+    environment:
+      <<: *COMMON_ENVIRONMENT
+      DATABASE_NAME: dhos-users-api-db
+      EXTERNAL_URL: http://dhos-users-api:5000
+    command: bash -c "flask db upgrade && python -m dhos_users_api"
+    healthcheck:
+      test: curl -f http://localhost:5000/running || false
+      interval: 3s
+      retries: 40
+      start_period: 10s
+    depends_on:
+      "postgres-db":
+        condition: service_healthy
+      "rabbitmq":
+        condition: service_healthy
+
+  rabbitmq:
+    container_name: "rabbitmq"
+    image: docker.io/rabbitmq:3-management-alpine
+    healthcheck:
+      test: rabbitmq-diagnostics -q check_running && rabbitmq-diagnostics -q check_local_alarms
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  postgres-db:
+    container_name: "postgres-db"
+    build:
+      context: ./postgres-db
+    environment:
+      - POSTGRES_USER=postgres-user
+      - POSTGRES_PASSWORD=TopSecretPassword
+      - POSTGRES_MULTIPLE_DATABASES="dhos-users-api-db"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER}" ]
+      interval: 2s
+      timeout: 5s
+      retries: 20

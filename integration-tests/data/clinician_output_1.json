@@ -1,0 +1,30 @@
+{
+    "agency_name": null,
+    "agency_staff_employee_number": null,
+    "bookmarked_patients": [],
+    "bookmarks": [],
+    "can_edit_ews": false,
+    "can_edit_encounter": null,
+    "contract_expiry_eod_date": null,
+    "email_address": "john.wick@hitman.com",
+    "first_name": "John",
+    "groups": [
+        "SEND Clinician"
+    ],
+    "job_title": "Ultimate Doctor",
+    "last_name": "Wick",
+    "locations": ["A1", "B2"],
+    "login_active": true,
+    "nhs_smartcard_number": "720490",
+    "phone_number": "",
+    "products": [
+        {
+            "closed_date": null,
+            "opened_date": "2021-07-19",
+            "product_name": "SEND"
+        }
+    ],
+    "professional_registration_number": null,
+    "send_entry_identifier": "499846",
+    "terms_agreement": {}
+}
