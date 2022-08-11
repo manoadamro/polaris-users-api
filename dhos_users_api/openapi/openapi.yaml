@@ -1263,13 +1263,14 @@ components:
           items:
             type: string
         products:
+          type: array
           nullable: true
           description: Products with which the clinician should be associated
           example: &id005
           - product_name: SEND
             opened_date: '2019-06-01'
-          allOf:
-          - $ref: '#/components/schemas/ClinicianProduct'
+          items:
+            $ref: '#/components/schemas/ClinicianProduct'
       description: Clinician update request
     ClinicianPasswordUpdateRequest:
       type: object
@@ -1390,11 +1391,12 @@ components:
           items:
             type: string
         products:
+          type: array
           nullable: true
           description: Products with which the clinician should be associated
           example: *id005
-          allOf:
-          - $ref: '#/components/schemas/ClinicianProduct'
+          items:
+            $ref: '#/components/schemas/ClinicianProduct'
       description: Clinician remove request
     ClinicianResponse:
       type: object
@@ -1529,11 +1531,12 @@ components:
           items:
             type: string
         products:
+          type: array
           nullable: true
           description: Products with which the clinician should be associated
           example: *id005
-          allOf:
-          - $ref: '#/components/schemas/ClinicianProduct'
+          items:
+            $ref: '#/components/schemas/ClinicianProduct'
         terms_agreement:
           type: object
           nullable: true

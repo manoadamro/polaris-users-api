@@ -328,9 +328,8 @@ class ClinicianAllFieldsAsOptional(ClinicianCommonOptionalFields):
         },
     )
 
-    products = fields.Nested(
-        ClinicianProductSchema(),
-        many=True,
+    products = fields.List(
+        fields.Nested(ClinicianProductSchema()),
         required=False,
         allow_none=True,
         metadata={
