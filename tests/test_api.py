@@ -638,3 +638,35 @@ class TestUsersApi:
         assert response.status_code == 200
         assert response.json is not None
         assert response.json["role1"] == ["permission1", "permission2"]
+
+    def test_clinician_product_patch(
+        self,
+        client: FlaskClient,
+        send_clinician_uuid: str,
+    ) -> None:
+        response = client.get(
+            flask.url_for(
+                "clinicians_api.get_clinician_by_uuid",
+                clinician_id=send_clinician_uuid,
+                product_name="SEND",
+            ),
+            headers={"Authorization": "Bearer TOKEN"},
+        )
+        assert response.status_code == 200
+
+        update = {"products": [{"product_name": "DBM", "opened_date": "2020-12-11"}]}
+
+        response = client.patch(
+            flask.url_for(
+                "clinicians_api.update_clinician",
+                clinician_id=send_clinician_uuid,
+                product_name="SEND",
+            ),
+            json=update,
+            content_type="application/json",
+            headers={"Authorization": "Bearer TOKEN"},
+        )
+        assert response.status_code == 200
+        assert response.json is not None
+        assert response.json["products"][0]["product_name"] == "SEND"
+        assert response.json["products"][1]["product_name"] == "DBM"
