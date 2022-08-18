@@ -66,11 +66,11 @@ workflows:
   build_test_deploy:
     jobs:
       - test:
-          context: engineering-build
+          context: polaris-foundation
       # - integration-test:
-      #     context: engineering-build
+      #     context: engineering-build # Can't run these without publicly available docker images
       - deploy-dev:
-          context: dhos-deploy
+          context: polaris-foundation
           requires:
             - test
             # - integration-test
