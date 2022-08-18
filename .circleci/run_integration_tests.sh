@@ -6,7 +6,7 @@ set -eux
 touch build-circleci.txt
 touch build-githash.txt
 
-TEST_CONTAINER_NAME=$(git remote -v | head -1 | cut -d/ -f2 | sed 's/-api.*/-integration-tests/')
+TEST_CONTAINER_NAME=dhos-users-integration-tests
 
 cd integration-tests || {
   echo "Unable to cd into integration tests"
