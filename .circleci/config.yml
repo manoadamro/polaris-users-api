@@ -58,9 +58,12 @@ jobs:
       - run:
           name: Build docker image
           command: docker build . -t polaris-users-api --build-arg GEMFURY_DOWNLOAD_KEY
-      # - run:
-      #     name: Push docker image
-      #     command: docker push ??? dev,cb-${CIRCLE_BUILD_NUM},$(git log --pretty=format:'%h' -n 1)
+      - run:
+          name: Authenticate to GHCR
+          command: echo $GHCR_TOKEN | docker login ghcr.io -u jonadaly --password-stdin
+      - run:
+          name: Push docker image
+          command: docker push ghcr.io/polaris-foundation/polaris-users-api:latest
 workflows:
   version: 2
   build_test_deploy:
@@ -78,3 +81,4 @@ workflows:
             branches:
               only:
                 - main
+                - setup-cicd # TODO: REMOVE
