@@ -1,5 +1,7 @@
 FROM python:3.9-slim
 
+LABEL org.opencontainers.image.source=https://github.com/polaris-foundation/polaris-users-api
+
 ARG GEMFURY_DOWNLOAD_KEY
 ENV FLASK_APP dhos_users_api/autoapp.py
 
