@@ -46,11 +46,7 @@ jobs:
   #         command: .circleci/run_integration_tests.sh
   deploy-dev:
     docker:
-      - image: gcr.io/dhos-stack/circleci-build-image:latest
-        <<: *GCP_DOCKER_AUTH
-    environment:
-      K8S_DEV_DEPLOYMENT_NAME: deployment/dhos-users-api-dep
-      ACR_REPO_BASE: dhos
+      - image: cimg/python:3.9
     steps:
       - checkout
       - setup_remote_docker:
