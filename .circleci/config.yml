@@ -60,13 +60,19 @@ jobs:
           command: docker build . -t polaris-users-api --build-arg GEMFURY_DOWNLOAD_KEY
       - run:
           name: Tag docker image
-          command: docker tag polaris-users-api ghcr.io/polaris-foundation/polaris-users-api:latest
+          command: |
+            docker tag polaris-users-api ghcr.io/polaris-foundation/polaris-users-api:latest
+            docker tag polaris-users-api ghcr.io/polaris-foundation/polaris-users-api:cb-${CIRCLE_BUILD_NUM}
+            docker tag polaris-users-api ghcr.io/polaris-foundation/polaris-users-api:$(git log --pretty=format:'%h' -n 1)
       - run:
           name: Authenticate to GHCR
           command: echo $GHCR_TOKEN | docker login ghcr.io -u jonadaly --password-stdin
       - run:
           name: Push docker image
-          command: docker push ghcr.io/polaris-foundation/polaris-users-api:latest
+          command: |
+            docker push ghcr.io/polaris-foundation/polaris-users-api:latest
+            docker push ghcr.io/polaris-foundation/polaris-users-api:cb-${CIRCLE_BUILD_NUM}
+            docker push ghcr.io/polaris-foundation/polaris-users-api:$(git log --pretty=format:'%h' -n 1)
 workflows:
   version: 2
   build_test_deploy:
