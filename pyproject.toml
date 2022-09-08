@@ -4,7 +4,7 @@ version = "0.0.1"
 description = "DHOS Users API"
 authors = ["Andrew Gill <andrew.gill@sensynehealth.com>"]
 keywords = ["Users"]
-repository = "https://github.com/draysontechnologies/dhos-users-api"
+repository = "https://github.com/polaris-foundation/polaris-users-api"
 
 [tool.poetry.dependencies]
 python = "^3.9"
