@@ -2,7 +2,6 @@ FROM python:3.9-slim
 
 LABEL org.opencontainers.image.source=https://github.com/polaris-foundation/polaris-users-api
 
-ARG GEMFURY_DOWNLOAD_KEY
 ENV FLASK_APP dhos_users_api/autoapp.py
 
 WORKDIR /app
@@ -14,7 +13,6 @@ RUN apt-get update \
     && useradd -m app \
     && chown -R app:app /app \
     && pip install --upgrade pip poetry \
-    && poetry config http-basic.sensynehealth ${GEMFURY_DOWNLOAD_KEY:?Missing build argument} '' \
     && poetry config virtualenvs.create false \
     && poetry install -v --no-dev
 

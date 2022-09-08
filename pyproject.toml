@@ -6,10 +6,6 @@ authors = ["Andrew Gill <andrew.gill@sensynehealth.com>"]
 keywords = ["Users"]
 repository = "https://github.com/draysontechnologies/dhos-users-api"
 
-[[tool.poetry.source]]
-name = "sensynehealth"
-url = "https://pypi.fury.io/sensynehealth/"
-
 [tool.poetry.dependencies]
 python = "^3.9"
 auth0-api-client = "1.*"

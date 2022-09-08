@@ -15,7 +15,6 @@ jobs:
       - checkout
       - run: |
           poetry self update
-          poetry config http-basic.sensynehealth ${GEMFURY_DOWNLOAD_KEY} ''
           pip install --upgrade tox
       - run:
           name: Create tox environment
@@ -54,7 +53,7 @@ jobs:
           command: .circleci/record_build_info.sh
       - run:
           name: Build docker image
-          command: docker build . -t polaris-users-api --build-arg GEMFURY_DOWNLOAD_KEY
+          command: docker build . -t polaris-users-api
       - run:
           name: Tag docker image
           command: |

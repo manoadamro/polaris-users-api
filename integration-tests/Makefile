@@ -14,9 +14,7 @@ lint:
 	isort --profile black .
 	mypy clients/ helpers/ steps/ --ignore-missing-imports --disallow-untyped-defs
 
-test-local: ## Builds docker containers for the microservice and the integration tests. Other containers are pulled from Azure and Docker repositories.
-## Note that before running this command you must be logged in to an Azure account with access to the Sensyne container repository.
-## Use the `az acr login -n sensynehealth` command before running the tests or whenever your login expires.
+test-local: ## Builds docker containers for the microservice and the integration tests.
 test-local: lint
 	docker-compose pull
 	docker-compose build
